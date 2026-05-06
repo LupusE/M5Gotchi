@@ -167,7 +167,7 @@ menu wifi_menu[] = {
 
 // menuID 7
 menu wpasec_menu[] = {
-  {"Sync Server", 52},    
+  {"Sync Server", 52},
   {"Cracked Results", 53},
   {"API Key change", 54},       
   {"Back", 255}
@@ -8157,6 +8157,7 @@ void drawSysInfo(){
 }
 
 void drawAttackMode(){
+  drawHintBox("Color legend:\nblue: pwned\nred: failed\ncyan: attacking\nyellow: whitelisted", 20);
   while(true){
     canvas_main.fillSprite(bg_color_rgb565);
     canvas_main.setTextColor(tx_color_rgb565);

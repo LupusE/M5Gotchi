@@ -156,6 +156,7 @@ String originalMacAddress;
 // (1>>17) - PMKID grabber hint
 // (1>>18) - donate hint
 // (1>>19) - inbox at boot hint
+// (1>>20) - debug view hint
 uint64_t hintsDisplayed = 0b0;
 
 // Developer flags
