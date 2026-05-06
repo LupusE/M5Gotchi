@@ -603,8 +603,6 @@ bool initVars() {
     String macAddr = WiFi.macAddress();
     originalMacAddress = macAddr;
     logMessage("Original MAC Address: " + macAddr);
-
-    
     JsonDocument config;
 
     if (FSYS.exists(NEW_CONFIG_FILE)) {

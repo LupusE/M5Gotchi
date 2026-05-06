@@ -13,22 +13,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-
 static const int GPS_RX_PIN = 15;
 static const int GPS_TX_PIN = 13;
 static const int GPS_BAUD_DEFAULT = 115200;
 int tot_observed_networks = 0;
-
 bool wardrive_achievement_flag = false;
-
 SemaphoreHandle_t wardriveMutex = nullptr;
 QueueHandle_t wardriveSaveQueue = nullptr;
-
 static String currentWardrivePath = "/M5Gotchi/wardriving/wardrive.csv";
 static bool filenameLocked = false;
-
-
-// WiGLE CSV header lines - exact format required by WiGLE
 static const char* WIGLE_META_HEADER   = "WigleWifi-1.4,appRelease=M5Gotchi,model=M5Gotchi,release=1.0,device=M5Gotchi,display=M5Gotchi,board=ESP32,brand=M5Stack";
 static const char* WIGLE_COLUMN_HEADER = "MAC,SSID,AuthMode,FirstSeen,Channel,Frequency,RSSI,CurrentLatitude,CurrentLongitude,AltitudeMeters,AccuracyMeters,RCOIs,MfgrId,Type";
 

@@ -1186,7 +1186,7 @@ void task(void *parameter) {
     auto whitelist = parseWhitelist();
     setMoodLooking(0);
     while (pwnagotchiRunning) {
-        setMoodLooking(0);
+        setIDLEMood();
 
         if (wifiResultsMutex && xSemaphoreTake(wifiResultsMutex, portMAX_DELAY) == pdTRUE) {
             std::vector<wifiRTResults> localResults = g_wifiRTResults;

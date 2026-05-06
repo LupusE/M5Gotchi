@@ -1726,8 +1726,6 @@ void pwngridMessenger() {
 
   while (true) {
     M5.update();
-    M5.update();
-
     uint64_t now = millis();
 
     // Auto Refresh Logic
@@ -3001,7 +2999,7 @@ void runApp(uint16_t appID){
       drawHintBox("This app is VERY slow due to complexity of whole csv parsing. Please be patient or use only for searching", 14);
       File csvFile;
       // Wardriving CSV viewer with search function
-      String selectedPath = "/M5Gotchi/wardriving/first_seen.csv";
+      String selectedPath = "/M5Gotchi/wardriving/wardrive.csv";
       String menu[] = {"Select file", "Use default (GPS data from pwned networks if enabled)"};
       int8_t fileChoice = drawMultiChoice("CSV File Option:", menu, 2, 2, 0);
       debounceDelay();
@@ -3456,7 +3454,6 @@ void runApp(uint16_t appID){
               
               while(true) {
                 M5.update();
-                M5.update();
     #ifndef BUTTON_ONLY_INPUT
                 M5Cardputer.update();
                 keyboard_changed = M5Cardputer.Keyboard.isChange();
@@ -3869,7 +3866,6 @@ void runApp(uint16_t appID){
           canvas_main.clear();
           uint8_t line;
           while(true){
-            M5.update();
             M5.update();
 #ifndef BUTTON_ONLY_INPUT
             M5Cardputer.update();
@@ -6719,8 +6715,6 @@ String userInput(const String &prompt, String desc, int maxLen,  const String &i
     #endif
     
     pushAll();
-    
-    M5.update();
     M5.update();
     
     #ifdef BUTTON_ONLY_INPUT
@@ -6868,11 +6862,7 @@ bool drawQuestionBox(String tittle, String info, String info2, String label) {
       canvas_main.setTextDatum(middle_center);
       canvas_main.drawString("No", canvas_center_x + 50, canvas_h - 12);
     }
-
-    
-
     pushAll();
-    M5.update();
     M5.update();
     
     #ifdef BUTTON_ONLY_INPUT
@@ -6961,7 +6951,6 @@ int drawMultiChoice(String tittle, String toDraw[], uint8_t menuSize , uint8_t p
     drawTopCanvas();
     drawBottomCanvas();
     M5.update();
-    M5.update();  
     
     #ifdef BUTTON_ONLY_INPUT
     inputManager::update();
@@ -7168,7 +7157,6 @@ int drawMultiChoiceLonger(String tittle, String toDraw[], uint8_t menuSize , uin
     drawTopCanvas();
     drawBottomCanvas();
     M5.update();
-    M5.update();  
 #ifndef BUTTON_ONLY_INPUT
     M5Cardputer.update();
     keyboard_changed = M5Cardputer.Keyboard.isChange();
@@ -7311,7 +7299,6 @@ String* makeList(String windowName, uint8_t appid, bool addln, uint8_t maxEntryL
         inputManager::update();
 #endif
         M5.update();
-        M5.update();
         if(isOkPressed()){break;}
         drawList(listToReturn, writeID);
         pushAll();
@@ -7348,10 +7335,7 @@ String* makeList(String windowName, uint8_t appid, bool addln, uint8_t maxEntryL
 
 void drawList(String toDraw[], uint8_t menu_size) {
   menu_len = menu_size;
-
   M5.update();
-  M5.update();
-
   canvas_main.fillSprite(bg_color_rgb565);
   canvas_main.setTextColor(tx_color_rgb565);
   canvas_main.setTextSize(2);
@@ -7776,7 +7760,6 @@ void editWhitelist(){
   String list[] = {"Add element", "Remove element" , "Done", "Preview"};
   debounceDelay();
   while(true){
-    initVars();
     logMessage("WRITE ID: " + String(writeID));
     std::vector<String> listToReturn = parseWhitelist();
     s8_t choice = drawMultiChoice("Whitelist editor", list, 4 , 0, 0);
@@ -7831,7 +7814,6 @@ void editWhitelist(){
 #else
         inputManager::update();
 #endif
-        M5.update();
         M5.update();
         if(isOkPressed()){break;}
         // Convert vector to array for drawList
@@ -8389,7 +8371,6 @@ void drawStats(){
   debounceDelay();
   while(true){
     M5.update();
-    M5.update();
     #ifdef BUTTON_ONLY_INPUT
     inputManager::update();
     if (inputManager::isButtonAPressed() || inputManager::isButtonBPressed()) {
@@ -8700,8 +8681,6 @@ void drawStorageInfo() {
     #endif
     
     pushAll();
-    
-    M5.update();
     M5.update();
     
     #ifdef BUTTON_ONLY_INPUT

@@ -69,11 +69,11 @@ mkdir -p firmware
 # Process Cardputer-full
 FULL_BIN_PATH=$(find .pio/build/Cardputer-full/ -type f -name "firmware.bin" | head -n 1)
 if [ ! -f "$FULL_BIN_PATH" ]; then
-    echo "❌ Full firmware.bin not found!"
+    echo "Full firmware.bin not found!"
     exit 1
 fi
 cp "$FULL_BIN_PATH" firmware/firmware.bin
-echo "✅ Full firmware copied to firmware/firmware.bin"
+echo "Full firmware copied to firmware/firmware.bin"
 
 cat <<EOF > firmware/firmware.json
 {
@@ -87,11 +87,11 @@ EOF
 # Process M5StickS3
 M5STICKS3_BIN_PATH=$(find .pio/build/m5sticks3/ -type f -name "firmware.bin" | head -n 1)
 if [ ! -f "$M5STICKS3_BIN_PATH" ]; then
-    echo "❌ M5StickS3 firmware.bin not found!"
+    echo "M5StickS3 firmware.bin not found!"
     exit 1
 fi
 cp "$M5STICKS3_BIN_PATH" firmware/m5sticks3.bin
-echo "✅ M5StickS3 firmware copied to firmware/m5sticks3.bin"
+echo "M5StickS3 firmware copied to firmware/m5sticks3.bin"
 
 cat <<EOF > firmware/m5sticks3.json
 {
@@ -102,9 +102,9 @@ cat <<EOF > firmware/m5sticks3.json
 }
 EOF
 
-esptool.py --chip esp32s3 merge_bin -o cardputer.bin --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0000 .pio/build/Cardputer-full/bootloader.bin 0x8000 .pio/build/Cardputer-full/partitions.bin 0xE000 ../../Documents/boot_app0.bin 0x10000 .pio/build/Cardputer-full/firmware.bin
-esptool.py --chip esp32s3 merge_bin -o m5stick.bin --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0000 .pio/build/m5sticks3/bootloader.bin 0x8000 .pio/build/m5sticks3/partitions.bin 0xE000 ../../Documents/boot_app0.bin 0x10000 .pio/build/m5sticks3/firmware.bin
+esptool --chip esp32s3 merge-bin -o cardputer.bin --flash-mode dio --flash-freq 80m --flash-size 8MB 0x0000 .pio/build/Cardputer-full/bootloader.bin 0x8000 .pio/build/Cardputer-full/partitions.bin 0xE000 ../../Documents/boot_app0.bin 0x10000 .pio/build/Cardputer-full/firmware.bin
+esptool --chip esp32s3 merge-bin -o m5stick.bin --flash-mode dio --flash-freq 80m --flash-size 8MB 0x0000 .pio/build/m5sticks3/bootloader.bin 0x8000 .pio/build/m5sticks3/partitions.bin 0xE000 ../../Documents/boot_app0.bin 0x10000 .pio/build/m5sticks3/firmware.bin
 
-echo "✅ Metadata files with full download URLs created"
+echo "Metadata files with full download URLs created"
 
 git tag -a "v$VERSION"
