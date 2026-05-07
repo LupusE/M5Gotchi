@@ -14,7 +14,6 @@
 #include "SD.h"
 #include <WiFi.h>
 #include "pwnagothi.h"
-#include "newPwnagotchi.h"
 #include "EapolSniffer.h"
 #include "PMKIDGrabber.h"
 #include "mood.h"
