@@ -268,7 +268,7 @@ menu devtools_menu[] = {
 };
 
 menu devtools_locked_menu[] = {
-  {"Unlock Dev Mode", 100},                // Unlock dev mode
+  {"Unlock Dev Mode", 100},
   {"Back", 255}
 };
 
@@ -321,8 +321,6 @@ QueueHandle_t unitQueue;
 uint8_t prevMID;
 volatile bool inboxDirty = false;
 volatile bool refresherRunning = false;
-TaskHandle_t pwngridInboxTaskHandle = nullptr;
-volatile bool killInboxTask = false;
 bool crackedList;
 unsigned long lastUserInteractionTime = 0;
 
@@ -366,34 +364,6 @@ void autoDimTask(void *param) {
     vTaskDelay(pdMS_TO_TICKS(25));
   }
   vTaskDelete(nullptr);
-}
-
-void pwngridInboxTask(void *param) {
-  while (!killInboxTask) {
-    if (WiFi.status() == WL_CONNECTED) {
-      api_client::pollInbox();
-      inboxDirty = true;
-    }
-    vTaskDelay(pdMS_TO_TICKS(5000));
-  }
-
-  pwngridInboxTaskHandle = nullptr;
-  vTaskDelete(nullptr);
-}
-
-void stopPwngridInboxTask() {
-  if (pwngridInboxTaskHandle != nullptr) {
-    killInboxTask = true;
-
-    // give it a moment to exit cleanly
-    vTaskDelay(pdMS_TO_TICKS(50));
-
-    // if it’s still alive, execute it
-    if (pwngridInboxTaskHandle != nullptr) {
-      vTaskDelete(pwngridInboxTaskHandle);
-      pwngridInboxTaskHandle = nullptr;
-    }
-  }
 }
 
 void unitWriterTask(void *pv) {
@@ -772,28 +742,30 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
     drawTopCanvas();
     drawBottomCanvas();
   }
-  
-  if (menuID == 1) {
+
+
+  switch (menuID){
+  case 1:
     drawMenuList(main_menu, 1, 12);
     prevMID = 1;
-  } 
-  else if (menuID == 2){
+    break;
+  case 2:
     drawMenuList( wifi_menu , 2, 7);
     prevMID = 2;
-  }
-  else if (menuID == 5){
+    break;
+  case 5:
     drawMenuList( pwngotchi_menu , 5, 6);
     prevMID = 5;
-  }
-  else if (menuID == 6){
+    break;
+  case 6:
     drawMenuList(settings_menu, 6, 9);
     prevMID = 6;
-  }  
-  else if (menuID == 7){
+    break;
+  case 7:
     (wpa_sec_api_key.length()>5)?drawMenuList(wpasec_menu, 7, 4):drawMenuList(wpasec_setup_menu, 7, 2);
     prevMID = 7;
-  }
-  else if (menuID == 8){
+    break;
+  case 8:
     SD_LOCK();
     if(!(prevMID == 8)){toUpload = FSYS.open("/M5Gotchi/pwngrid/cracks.conf");}
     SD_UNLOCK();
@@ -802,8 +774,8 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
     }
     else (pwngrid_indentity.length()>10)? drawMenuList(pwngrid_menu, 8, 8): drawMenuList(pwngrid_not_enrolled_menu, 8, 2);
     prevMID = 8;
-  }
-  else if (menuID == 9){
+    break;
+  case 9:
     if(wiggle_api_key.length() > 5){
       drawMenuList(wardrivingMenuWithWiggle, 9, 5);
     }
@@ -811,16 +783,16 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
       drawMenuList(wardrivingMenuWithWiggleUnsett, 9, 4);
     }
     prevMID = 9;
-  }
-  else if (menuID == 10){
+    break;
+  case 10:
     drawMenuList(auto_menu, 10, 3);
     prevMID = 10;
-  }
-  else if (menuID == 11){
+    break;
+  case 11:
     drawMenuList(tools_menu, 11, 4);
     prevMID = 11;
-  }
-  else if (menuID == 99) {
+    break;
+  case 99:
     if(dev_mode){
       drawMenuList(devtools_menu, 99, 14);
     }
@@ -828,9 +800,8 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
       drawMenuList(devtools_locked_menu, 99, 2);
     }
     prevMID = 99;
-  }
-  else if (menuID == 0)
-  {
+    break;
+  default:
     //redraw only in 5 seconds intervals
     unsigned long currentTime = millis();
     if ((currentTime - lastRedrawTime >= 5000 )|| needsUiRedraw) {
@@ -841,7 +812,8 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
       redrawUi(show_toolbars);
       lastRedrawTime = currentTime;
       needsUiRedraw = false;
-    }else if(setupDone){
+    }
+    else if(setupDone){
       if(CURRENT_VERSION == "dev"){
         drawNewAchUnlock(ACH_DEV_VER);
       }
@@ -899,6 +871,7 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
         drawNewAchUnlock(ACH_6_HOUR_SESSION);
       }
     }
+    break;
   }
 
   if(pwnagotchiTaskHandle != nullptr && menuID != 10 && menuID != 0){
@@ -1581,14 +1554,11 @@ String resolveChatFingerprint(const String &chatName, const std::vector<message>
 }
 
 void pwngridMessenger() {
-  killInboxTask = false;
   debounceDelay();
 
-  // 1. Network Check
   if (WiFi.status() != WL_CONNECTED) {
     drawInfoBox("Info", "Network connection needed", "To open inbox!", false, false);
     delay(3000);
-    // Warning: Ensure runApp does not recursively call pwngridMessenger
     runApp(43); 
     if (WiFi.status() != WL_CONNECTED) {
       drawInfoBox("ERROR!", "No network connection", "Operation abort!", true, false);
@@ -1597,7 +1567,6 @@ void pwngridMessenger() {
     }
   }
 
-  // 2. Setup Directory
   SD_LOCK();
   if (!FSYS.exists("/M5Gotchi/pwngrid/chats")) FSYS.mkdir("/M5Gotchi/pwngrid/chats");
   SD_UNLOCK();
@@ -1612,7 +1581,6 @@ void pwngridMessenger() {
 
   api_client::pollInbox();
 
-  // 3. Load Chat List (Safe Method)
   std::vector<String> chats;
     {
       SD_LOCK();
@@ -1623,22 +1591,17 @@ void pwngridMessenger() {
         while (true) {
         String name = dir.getNextFileName();
         if (!name.length()) break;
-            
-        // FIX: Prevent crash if getNextFileName returns only the filename
         if (name.startsWith("/M5Gotchi/pwngrid/chats/")) {
-          chats.push_back(name.substring(24)); // Extract just the chat name
+          chats.push_back(name.substring(24));
         } else {
-          // Ignore hidden files like .DS_Store
           if (!name.startsWith(".")) chats.push_back(name);
         }
         }
-        dir.close(); // FIX: Explicit close
+        dir.close();
       }
     }
   chats.push_back("New chat");
 
-  // FIX: Use Vector data instead of Stack Array (VLA)
-  // Assuming drawMultiChoice accepts String* or String[]
   int8_t result = drawMultiChoice("Open or create chat:", chats.data(), chats.size(), 0, 0);
   
   if (result < 0) {
@@ -1653,12 +1616,11 @@ void pwngridMessenger() {
     File contacts = FSYS.open(ADDRES_BOOK_FILE, FILE_READ, false);
     if (!contacts) { SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false); stopPwngridInboxTask(); menuID = 8; return; }
 
-    // FIX: Check validity and size, close if invalid
     if (contacts.size() < 5) { contacts.close(); SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false); stopPwngridInboxTask(); menuID = 8; return; }
 
     JsonDocument contacts_json;
     DeserializationError err = deserializeJson(contacts_json, contacts);
-    contacts.close(); // FIX: Explicit close immediately after use
+    contacts.close();
     SD_UNLOCK();
 
     if (err) {
@@ -1683,7 +1645,6 @@ void pwngridMessenger() {
       return;
     }
 
-    // FIX: Use Vector data
     result = drawMultiChoice("Select chat recipient:", names.data(), names.size(), 0, 0);
     
     if (result < 0) {
@@ -1692,7 +1653,6 @@ void pwngridMessenger() {
       return;
     }
 
-    // Create file safely
     SD_LOCK();
     File newChat = FSYS.open("/M5Gotchi/pwngrid/chats/" + names[result], FILE_WRITE, true);
     if(newChat) newChat.close();
@@ -1701,8 +1661,6 @@ void pwngridMessenger() {
     chats.push_back(names[result]);
     result = chats.size() - 1;
   }
-
-  // ---------------- CHAT UI ----------------
 
   std::vector<message> chatHistory = loadMessageHistory(chats[result]);
   bool inboxDirty = false;
@@ -1744,7 +1702,6 @@ void pwngridMessenger() {
       inboxDirty = false;
     }
 
-    // FIX: Safer math for scroll limits (unsigned size - 4 can underflow)
     int maxScroll = (int)chatHistory.size() - 4;
     if (maxScroll < 0) maxScroll = 0;
     
@@ -1783,7 +1740,6 @@ void pwngridMessenger() {
     #ifdef BUTTON_ONLY_INPUT
     inputManager::update();
     if (!typingMessage) {
-      // prioritize long-press B as special action
       if (inputManager::isButtonALongPressed()) {
         // Delete chat
         if(drawQuestionBox("Delete chat?", "Are you sure?", "")){
@@ -1857,7 +1813,7 @@ void pwngridMessenger() {
             canvas_main.fillRect(0, (canvas_h/2)-10, 250, 20, bg_color_rgb565); 
             canvas_main.drawString("Send failed!", canvas_center_x , canvas_h/2); 
             pushAll();
-            delay(2000); // Shorter delay than 3000
+            delay(2000);
           }
           
           textTyped = "";
@@ -1865,7 +1821,6 @@ void pwngridMessenger() {
         }
       }
       if(inputManager::isButtonALongPressed()){
-        // Edit typed text
         textTyped = userInput("Edit message:", textTyped, 24);
         debounceDelay();
       }
@@ -1915,7 +1870,6 @@ void pwngridMessenger() {
 
       bool msgSent = false;
       
-      // Retry logic for sending
       for(uint8_t i = 0; i < 2; i++){
         if(api_client::sendMessageTo(chatFingerprint, textTyped)){
           msgSent = true;
@@ -1932,7 +1886,7 @@ void pwngridMessenger() {
         canvas_main.fillRect(0, (canvas_h/2)-10, 250, 20, bg_color_rgb565); 
         canvas_main.drawString("Send failed!", canvas_center_x , canvas_h/2); 
         pushAll();
-        delay(2000); // Shorter delay than 3000
+        delay(2000);
       }
       
       textTyped = "";
