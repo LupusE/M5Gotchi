@@ -322,7 +322,7 @@ void SnifferLoop() {
         if (file) {
             logMessage("Writing captured packet to file.");
             // write saved packets first
-            for(uint8_t i = 0; i < savedPacketCount; i++) {
+            for(int i = 0; i < savedPacketCount; i++) {
                 if (savedPackets[i]) {
                     logMessage("Writing cached packet to file.");
                     pcaprec_hdr_s recHeader;

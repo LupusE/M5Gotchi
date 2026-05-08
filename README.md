@@ -1,9 +1,8 @@
 ![baner](https://github.com/user-attachments/assets/8daf0ad9-fb8c-4d7c-812c-39e26de5e7f4)
 
-
 # M5Gothi
 
-M5Gothi brings the powerful Pwnagotchi functions and interface to the M5Cardputer platform, providing both automatic and manual Wi-Fi control through an integrated keyboard interface, so you can finally go touch some grass and hack at the same time. Inspied by the original Pwnagotchi project. It doesn't have AI, but at least its working like it should.
+M5Gothi brings the Pwnagotchi functions and interface to the M5Stack platform, providing both automatic and manual Wi-Fi control through an integrated keyboard or button interface, so you can finally go touch some grass and hack at the same time. Inspied by the original Pwnagotchi project. It doesn't have AI, but at least its working like it should.
 
 ---
 
@@ -38,7 +37,7 @@ M5Gothi brings the powerful Pwnagotchi functions and interface to the M5Cardpute
 
 ---
 > [!IMPORTANT]
-> An SD card is **required** for the firmware to function properly.
+> An SD card is **required** for the firmware to function properly on Cardputer. M5StickS3 will use build-in littleFs memory.
 
 ### SD Card File Structure
 
@@ -47,8 +46,8 @@ M5Gothi brings the powerful Pwnagotchi functions and interface to the M5Cardpute
 - Wpa-sec needed files: uploaded.json, cracked.json. Do not edit those files, and if you're running lite mode and need to view them on pc - use text editor of your choice.
 - Captured handshakes will be stored inside a folder called:
 
-  ```
-  /handshake
+  ```text
+  /M5Gotchi/handshake
   ```
   
 ---
@@ -58,7 +57,7 @@ M5Gothi brings the powerful Pwnagotchi functions and interface to the M5Cardpute
 | Device         | Status         | Notes                          |
 |----------------|----------------|--------------------------------|
 | M5Cardputer    | ✅ Supported   | Main target device             |
-| M5stickS3 | ✅ Supported | Limited input ability|
+| M5stickS3      | ✅ Supported   | Limited input ability          |
 | M5Cardputer adv| ✅ Supported   | Tested And Work Fine           |
 | M5Stack Core2  | ⏳ Planned     | Requires GPIO adaptation       |
 | M5StickC       | ⏳ Planned     | Requires GPIO adaptation       |
@@ -82,7 +81,6 @@ M5Gothi brings the powerful Pwnagotchi functions and interface to the M5Cardpute
 | PWNGrid support         | ✅ Done    |
 | Custom UI plugins       | Planned    |
 
-
 >[!NOTE]
 >If you want to see some of your features, submit ideas with an pull request.
 
@@ -90,8 +88,8 @@ M5Gothi brings the powerful Pwnagotchi functions and interface to the M5Cardpute
 
 ## Requirements
 
-- [PlatformIO](https://platformio.org/) — for building and flashing the firmware
-- Git — for cloning the repository
+- [PlatformIO](https://platformio.org/) - for building and flashing the firmware
+- Git - for cloning the repository
 - All other dependencies are automatically handled by PlatformIO
 
 ### Installing PlatformIO
@@ -138,17 +136,17 @@ You can install PlatformIO using either:
 >[!IMPORTANT]
 >To use any of the functions, pwnagothi mode must be set to MANU, otherwise nothing will work!
 
-- **UI** is fully controlled via the **built-in keyboard**
+- **UI** is fully controlled via the **built-in keyboard** in cardputer or 2 buttons on M5StickS3
 - Use  `G0` button to turn screen off or change the mode - customize this is settings
 - Press `ESC` to open the main menu
 - Use **arrow keys** to navigate
 - Exit apps using `Fn + ESC`
-- On first boot there will be created m5gotchi.conf file - use it to change setting on **lite mode** compilations
+- On first boot there will be created m5gotchi.conf file
 - Customize name to your likings via settings
 - customize theme to your liking via settings
 - Use ENTER to confirm or `y` or `n` when asked to do so
 - use `c` to clone wifi when in wifi details menu
-- handshakes are stored in `/handshake/` folder with filemanes containing SSID and BSSID of network that was pwned
+- handshakes are stored in `/M5Gotchi/handshake/` folder with filemanes containing SSID and BSSID of network that was pwned
 
 ## Update Methods
 
@@ -170,11 +168,11 @@ You can install PlatformIO using either:
 
 ---
 
-## Core dump reporter (MQTT) 🔧
+## Core dump reporter (MQTT)
 
 When built with `ENABLE_COREDUMP_LOGGING` the firmware will publish core dump uploads over MQTT to the configured broker. The flow is:
 
-- `device/coredump/meta` — JSON metadata published first. Contains fields:
+- `device/coredump/meta` - JSON metadata published first. Contains fields:
   - `upload_id` (string)
   - `mac` (string)
   - `board` (numeric board id)
@@ -186,25 +184,21 @@ When built with `ENABLE_COREDUMP_LOGGING` the firmware will publish core dump up
   - `size`, `chunks`, `addr`, `freeHeap`
   - `gps_tx`, `gps_rx` (GPS TX/RX pins configured)
   - `advertise_pwngrid`, `toggle_pwnagothi_with_gpio0`, `cardputer_adv`, `limitFeatures` (boolean flags reported as 0/1)
-
-- `device/coredump/chunk` — messages with a small header JSON (upload_id, seq, len, checksum, total) followed by `\n` and base64-encoded chunk payload.
-
-- `device/coredump/end` — final JSON with `upload_id`, `status`, `sent_chunks`, `checksum` (combined checksum of all bytes).
-
-- `device/coredump/ack/<upload_id>` (or `device/coredump/ack/#`) — the collector should send an acknowledgement JSON with `upload_id`, `status` (`ok` or `complete`), `received_chunks`, and `checksum` when the uploaded file is verified; the device will only erase the core dump after receiving a matching verification ack.
+- `device/coredump/chunk` - messages with a small header JSON (upload_id, seq, len, checksum, total) followed by `\n` and base64-encoded chunk payload.
+- `device/coredump/end` - final JSON with `upload_id`, `status`, `sent_chunks`, `checksum` (combined checksum of all bytes).
+- `device/coredump/ack/<upload_id>` (or `device/coredump/ack/#`) - the collector should send an acknowledgement JSON with `upload_id`, `status` (`ok` or `complete`), `received_chunks`, and `checksum` when the uploaded file is verified; the device will only erase the core dump after receiving a matching verification ack.
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+This project is licensed under the **MIT License** - see [LICENSE](LICENSE) for details.
 
 ---
 
 # CREDIT
 
 <https://github.com/evilsocket/pwnagotchi> - For the original pwnagothi project
-<br>
 <https://github.com/viniciusbo/m5-palnagotchi> - For inspiration and pwngrid support for cardputer
 
 ---
@@ -219,7 +213,6 @@ To help out, fork this repo, before opening a PR run pre_commit.sh (don't worry 
 ## Contact
 
 Join our Discord community for support, discussion, and sneak peeks at upcoming features.
-
 <https://discord.gg/2TZFcndkhB>
 
 ---

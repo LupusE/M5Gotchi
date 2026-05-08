@@ -136,7 +136,6 @@ static const char * const broken_ssids[]{
   "SSID_Broken",
 };
 
-
 // menuID 1
 menu main_menu[] = {
     {"Manual Control", 1},        // Manual mode
@@ -366,6 +365,58 @@ void autoDimTask(void *param) {
   vTaskDelete(nullptr);
 }
 
+size_t png_datalen = 320 * 240;
+uint8_t* PngData = (uint8_t*)malloc(png_datalen * sizeof(uint8_t));
+
+
+void screenshotTask(void *pv){
+  //while(true){
+    M5.update();
+    #ifndef BUTTON_ONLY_INPUT
+    M5Cardputer.update();
+    if(M5Cardputer.Keyboard.isKeyPressed(KEY_LEFT_CTRL)){
+      SD_LOCK();
+      uint8_t temp_i = 0;
+      if(!FSYS.exists("/M5Gotchi/screenshots")){
+        FSYS.mkdir("/M5Gotchi/screenshots");
+      }
+      char fName[64];
+      while(true){
+        sprintf(fName, "/M5Gotchi/screenshots/%s.png", String(temp_i));
+        if(FSYS.exists(fName)) temp_i++;
+        else break;
+      }
+      size_t pngLen;
+      PngData = (uint8_t*)M5.Display.createPng(&png_datalen, 0, 0, 240, 128);
+      
+      if (!PngData) {
+          logMessage("Screenshot failed: insufficient memory");
+          SD_UNLOCK();
+          //continue;
+      }
+
+      // Open file for writing
+      File file = FSYS.open(String(fName), FILE_WRITE);
+      if (!file) {
+          logMessage("Failed to open file on FSYS card");
+          free(PngData);
+          SD_UNLOCK();
+          //continue;
+      }
+
+      // Write PNG data
+      file.write(PngData, pngLen);
+      file.close();
+      free(PngData); // Free allocated memory
+      fLogMessage("Screenshot saved to %s (%u bytes)\n", fName, pngLen);
+      SD_UNLOCK();
+      debounceDelay();
+    }
+    #endif
+    delay(150);
+  //}
+}
+
 void unitWriterTask(void *pv) {
   unit_msg_t msg;
 
@@ -480,6 +531,15 @@ void initUi() {
     NULL,
     0
   );
+  // xTaskCreatePinnedToCore(
+  //   screenshotTask,
+  //   "scrTsk",
+  //   32000,
+  //   nullptr,
+  //   2,
+  //   nullptr,
+  //   0
+  // );
   buttonSemaphore = xSemaphoreCreateBinary();
   // Create display mutex
   displayMutex = xSemaphoreCreateMutex();
@@ -657,7 +717,7 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
           delete wreq;
       }
   }
-
+  screenshotTask(nullptr);
   FileWriteRequest* writeReq = nullptr;
   if (fileWriteQueue && xQueueReceive(fileWriteQueue, &writeReq, 0) == pdTRUE) {
     if (writeReq) {
@@ -1605,7 +1665,7 @@ void pwngridMessenger() {
   int8_t result = drawMultiChoice("Open or create chat:", chats.data(), chats.size(), 0, 0);
   
   if (result < 0) {
-    stopPwngridInboxTask();
+    
     menuID = 8;
     return;
   }
@@ -1614,9 +1674,9 @@ void pwngridMessenger() {
   if (result == (int)chats.size() - 1) {
     SD_LOCK();
     File contacts = FSYS.open(ADDRES_BOOK_FILE, FILE_READ, false);
-    if (!contacts) { SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false); stopPwngridInboxTask(); menuID = 8; return; }
+    if (!contacts) { SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false);  menuID = 8; return; }
 
-    if (contacts.size() < 5) { contacts.close(); SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false); stopPwngridInboxTask(); menuID = 8; return; }
+    if (contacts.size() < 5) { contacts.close(); SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false);  menuID = 8; return; }
 
     JsonDocument contacts_json;
     DeserializationError err = deserializeJson(contacts_json, contacts);
@@ -1625,7 +1685,7 @@ void pwngridMessenger() {
 
     if (err) {
       drawInfoBox("ERROR", "Contacts load failed!", "SD is mad.", true, false);
-      stopPwngridInboxTask();
+      
       menuID = 8;
       return;
     }
@@ -1640,7 +1700,7 @@ void pwngridMessenger() {
 
     if (names.empty()) {
       drawInfoBox("Info", "No new chats.", "", true, false);
-      stopPwngridInboxTask();
+      
       menuID = 8;
       return;
     }
@@ -1648,7 +1708,7 @@ void pwngridMessenger() {
     result = drawMultiChoice("Select chat recipient:", names.data(), names.size(), 0, 0);
     
     if (result < 0) {
-      stopPwngridInboxTask();
+      
       menuID = 8;
       return;
     }
@@ -1676,7 +1736,7 @@ void pwngridMessenger() {
 
   if (chatFingerprint.length() < 10) {
     drawInfoBox("ERROR!", "Recipient fingerprint", "not found!", true, false);
-    stopPwngridInboxTask();
+    
     menuID = 8;
     return;
   }
@@ -1749,7 +1809,7 @@ void pwngridMessenger() {
           drawInfoBox("Info", "Chat deleted.", "", true, false);
           menuID = 8;
           debounceDelay();
-          stopPwngridInboxTask();
+          
           return;
         }
         debounceDelay();
@@ -1757,7 +1817,7 @@ void pwngridMessenger() {
 
       if (inputManager::isButtonBLongPressed()) {
         // Exit chat
-        stopPwngridInboxTask();
+        
         menuID = 8;
         return;
       }
@@ -1832,7 +1892,7 @@ void pwngridMessenger() {
       if (!typingMessage) {
           if (c == ';') { scroll++; delay(50); lastInboxSync = now; }
           if (c == '.') { scroll--; delay(50); lastInboxSync = now; }
-          if (c == '`') { stopPwngridInboxTask(); menuID = 8; return; }
+          if (c == '`') {  menuID = 8; return; }
           
           if (c == 'd') {
             if(drawQuestionBox("Delete chat?", "Are you sure?", "")){
@@ -1842,7 +1902,7 @@ void pwngridMessenger() {
               drawInfoBox("Info", "Chat deleted.", "", true, false);
               menuID = 8;
               debounceDelay();
-              stopPwngridInboxTask();
+              
               return;
             }
             debounceDelay();
@@ -2148,7 +2208,7 @@ void runApp(uint16_t appID){
           contacts_vector.push_back({name, fingerprint});
       }
       String names[contacts_vector.size()+1];
-      for(uint16_t i = 0; i<=contacts_vector.size(); i++){
+      for(size_t i = 0; i<=contacts_vector.size(); i++){
         names[i] = contacts_vector[i].name;
       }
       int16_t result = drawMultiChoice("Select recepient:", names, contacts_vector.size(), 0, 0);
