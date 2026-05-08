@@ -370,51 +370,91 @@ uint8_t* PngData = (uint8_t*)malloc(png_datalen * sizeof(uint8_t));
 
 
 void screenshotTask(void *pv){
-  //while(true){
+  while(true){
     M5.update();
     #ifndef BUTTON_ONLY_INPUT
     M5Cardputer.update();
     if(M5Cardputer.Keyboard.isKeyPressed(KEY_LEFT_CTRL)){
       SD_LOCK();
-      uint8_t temp_i = 0;
-      if(!FSYS.exists("/M5Gotchi/screenshots")){
-        FSYS.mkdir("/M5Gotchi/screenshots");
-      }
+      xSemaphoreTake(displayMutex, portMAX_DELAY);
+      uint16_t temp_i;
       char fName[64];
       while(true){
         sprintf(fName, "/M5Gotchi/screenshots/%s.png", String(temp_i));
         if(FSYS.exists(fName)) temp_i++;
         else break;
       }
-      size_t pngLen;
-      PngData = (uint8_t*)M5.Display.createPng(&png_datalen, 0, 0, 240, 128);
-      
-      if (!PngData) {
-          logMessage("Screenshot failed: insufficient memory");
-          SD_UNLOCK();
-          //continue;
-      }
 
-      // Open file for writing
-      File file = FSYS.open(String(fName), FILE_WRITE);
+      File file = FSYS.open(fName, FILE_WRITE, true);
+
       if (!file) {
-          logMessage("Failed to open file on FSYS card");
-          free(PngData);
-          SD_UNLOCK();
-          //continue;
+        logMessage("[DISPLAY] Failed to open screenshot file");
+        return;
+      }
+      
+      int image_width = 240;
+      int image_height = 135;
+
+      const uint32_t pad = (4 - (3 * image_width) % 4) % 4;
+      uint32_t filesize = 54 + (3 * image_width + pad) * image_height;
+      
+      // BMP header, 54 bytes
+      unsigned char header[54] = {
+          'B', 'M',   
+          0, 0, 0, 0, 
+          0, 0, 0, 0, 
+          54, 0, 0, 0,
+          40, 0, 0, 0,
+          0, 0, 0, 0, 
+          0, 0, 0, 0, 
+          1, 0,       
+          24, 0,      
+          0, 0, 0, 0, 
+          0, 0, 0, 0, 
+          0, 0, 0, 0, 
+          0, 0, 0, 0, 
+          0, 0, 0, 0, 
+          0, 0, 0, 0  
+      };
+      
+      // Fill in size fields
+      for (uint32_t i = 0; i < 4; i++) {
+          header[2 + i] = (filesize >> (8 * i)) & 0xFF;
+          header[18 + i] = (image_width >> (8 * i)) & 0xFF;
+          header[22 + i] = (image_height >> (8 * i)) & 0xFF;
+      }
+      
+      file.write(header, 54);
+
+      unsigned char line_data[image_width * 3 + pad];
+
+      for (int i = image_width * 3; i < image_width * 3 + (int)pad; i++) {
+          line_data[i] = 0;
       }
 
-      // Write PNG data
-      file.write(PngData, pngLen);
+      for (int y = image_height - 1; y >= 0; y--) {
+          // Read one line of RGB data from display
+          M5.Display.readRectRGB(0, y, image_width, 1, line_data);
+          
+          // Swap R and B, BMP uses BGR order
+          for (int x = 0; x < image_width; x++) {
+              unsigned char temp = line_data[x * 3];
+              line_data[x * 3] = line_data[x * 3 + 2];
+              line_data[x * 3 + 2] = temp;
+          }
+          
+          file.write(line_data, image_width * 3 + pad);
+      }
+      
       file.close();
-      free(PngData); // Free allocated memory
-      fLogMessage("Screenshot saved to %s (%u bytes)\n", fName, pngLen);
+      xSemaphoreGive(displayMutex);
+      fLogMessage("Screenshot saved %s", fName);
       SD_UNLOCK();
       debounceDelay();
     }
     #endif
     delay(150);
-  //}
+  }
 }
 
 void unitWriterTask(void *pv) {
@@ -531,14 +571,14 @@ void initUi() {
     NULL,
     0
   );
-  // xTaskCreatePinnedToCore(
+  // xTaskCreatePinnedToCore( //only enable when in showcase. not suitable for production as it fucks up the heap very badly
   //   screenshotTask,
   //   "scrTsk",
-  //   32000,
+  //   2048*2,
   //   nullptr,
-  //   2,
+  //   1,
   //   nullptr,
-  //   0
+  //   1
   // );
   buttonSemaphore = xSemaphoreCreateBinary();
   // Create display mutex
@@ -717,7 +757,7 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
           delete wreq;
       }
   }
-  screenshotTask(nullptr);
+  
   FileWriteRequest* writeReq = nullptr;
   if (fileWriteQueue && xQueueReceive(fileWriteQueue, &writeReq, 0) == pdTRUE) {
     if (writeReq) {
@@ -940,7 +980,7 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
     menu_current_page = 1;
     needsUiRedraw = true;
   }
-  
+  xSemaphoreTake(displayMutex, portMAX_DELAY);
   M5.Display.startWrite();
   if (show_toolbars) {
     canvas_top.pushSprite(0, 0);
@@ -952,6 +992,7 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
   }
   canvas_main.pushSprite(0, canvas_top_h);
   M5.Display.endWrite();
+  xSemaphoreGive(displayMutex);
   if(pwnagothiMode && triggerPwnagothi){
     if(!stealth_mode){
       //nothing - this will be a task
