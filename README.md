@@ -18,7 +18,7 @@ M5Gothi brings the Pwnagotchi functions and interface to the M5Stack platform, p
 # Main screen data
 
 <p align=center>
-  <img src="https://github.com/user-attachments/assets/63eb92f1-4194-431e-8f74-3df0472611a7" width="300">
+  <img width="240" height="135" alt="14" src="https://github.com/user-attachments/assets/35285eb2-f8f8-4b72-9803-92e33c34d9c8" />
 </p>
 
 ---
@@ -160,11 +160,18 @@ You can install PlatformIO using either:
 
 ## Example screenshots of menus
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ba45d464-f09b-4d81-b8b9-d0ca3074e64e" width="300">
-  <img src="https://github.com/user-attachments/assets/1d4dfe88-0109-47bb-a71e-f5fe25f6150f" width="300">
-  <img src="https://github.com/user-attachments/assets/52b26e04-b6e9-41c0-bf25-89069a821e64" width="300">
-</p>
+<table align="center">
+  <tr>
+    <td><img width="240" height="135" alt="18" src="https://github.com/user-attachments/assets/23b7398a-e47d-44dd-8731-69fced13f676" /></td>
+    <td><img width="240" height="135" alt="7" src="https://github.com/user-attachments/assets/fcd706fe-8314-43bd-a5be-bb82818397e1" /></td>
+    <td><img width="240" height="135" alt="8" src="https://github.com/user-attachments/assets/b126e6a5-50b8-4c72-b317-7a31fce77bfb" /></td>
+  </tr>
+  <tr>
+    <td><img width="240" height="135" alt="13" src="https://github.com/user-attachments/assets/d85311e6-bbd6-4fb8-ad65-1a8c1a921f13" /></td>
+    <td><img width="240" height="135" alt="17" src="https://github.com/user-attachments/assets/149543fd-f2d7-43b8-8851-d6659c7a0a9c" /></td>
+    <td><img width="240" height="135" alt="11" src="https://github.com/user-attachments/assets/dcb10c42-647f-492d-b14c-1b3bb058e3b5" /></td>
+  </tr>
+</table>
 
 ---
 
