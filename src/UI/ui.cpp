@@ -136,6 +136,7 @@ static const char * const broken_ssids[]{
   "SSID_Broken",
 };
 
+
 // menuID 1
 menu main_menu[] = {
     {"Manual Control", 1},        // Manual mode
@@ -365,10 +366,6 @@ void autoDimTask(void *param) {
   vTaskDelete(nullptr);
 }
 
-size_t png_datalen = 320 * 240;
-uint8_t* PngData = (uint8_t*)malloc(png_datalen * sizeof(uint8_t));
-
-
 void screenshotTask(void *pv){
   while(true){
     M5.update();
@@ -571,15 +568,15 @@ void initUi() {
     NULL,
     0
   );
-  // xTaskCreatePinnedToCore( //only enable when in showcase. not suitable for production as it fucks up the heap very badly
-  //   screenshotTask,
-  //   "scrTsk",
-  //   2048*2,
-  //   nullptr,
-  //   1,
-  //   nullptr,
-  //   1
-  // );
+  xTaskCreatePinnedToCore(
+    screenshotTask,
+    "scrTsk",
+    2048*2,
+    nullptr,
+    1,
+    nullptr,
+    1
+  );
   buttonSemaphore = xSemaphoreCreateBinary();
   // Create display mutex
   displayMutex = xSemaphoreCreateMutex();
@@ -757,7 +754,7 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
           delete wreq;
       }
   }
-  
+
   FileWriteRequest* writeReq = nullptr;
   if (fileWriteQueue && xQueueReceive(fileWriteQueue, &writeReq, 0) == pdTRUE) {
     if (writeReq) {
@@ -980,7 +977,7 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
     menu_current_page = 1;
     needsUiRedraw = true;
   }
-  xSemaphoreTake(displayMutex, portMAX_DELAY);
+  
   M5.Display.startWrite();
   if (show_toolbars) {
     canvas_top.pushSprite(0, 0);
@@ -992,7 +989,6 @@ void updateUi(bool show_toolbars, bool triggerPwnagothi, bool overrideDelay) {
   }
   canvas_main.pushSprite(0, canvas_top_h);
   M5.Display.endWrite();
-  xSemaphoreGive(displayMutex);
   if(pwnagothiMode && triggerPwnagothi){
     if(!stealth_mode){
       //nothing - this will be a task
@@ -1706,7 +1702,7 @@ void pwngridMessenger() {
   int8_t result = drawMultiChoice("Open or create chat:", chats.data(), chats.size(), 0, 0);
   
   if (result < 0) {
-    
+    ;
     menuID = 8;
     return;
   }
@@ -1715,9 +1711,9 @@ void pwngridMessenger() {
   if (result == (int)chats.size() - 1) {
     SD_LOCK();
     File contacts = FSYS.open(ADDRES_BOOK_FILE, FILE_READ, false);
-    if (!contacts) { SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false);  menuID = 8; return; }
+    if (!contacts) { SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false); ; menuID = 8; return; }
 
-    if (contacts.size() < 5) { contacts.close(); SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false);  menuID = 8; return; }
+    if (contacts.size() < 5) { contacts.close(); SD_UNLOCK(); drawInfoBox("Info", "No friends found.", "Touch grass.", true, false); ; menuID = 8; return; }
 
     JsonDocument contacts_json;
     DeserializationError err = deserializeJson(contacts_json, contacts);
@@ -1726,7 +1722,7 @@ void pwngridMessenger() {
 
     if (err) {
       drawInfoBox("ERROR", "Contacts load failed!", "SD is mad.", true, false);
-      
+      ;
       menuID = 8;
       return;
     }
@@ -1741,7 +1737,7 @@ void pwngridMessenger() {
 
     if (names.empty()) {
       drawInfoBox("Info", "No new chats.", "", true, false);
-      
+      ;
       menuID = 8;
       return;
     }
@@ -1749,7 +1745,7 @@ void pwngridMessenger() {
     result = drawMultiChoice("Select chat recipient:", names.data(), names.size(), 0, 0);
     
     if (result < 0) {
-      
+      ;
       menuID = 8;
       return;
     }
@@ -1777,7 +1773,7 @@ void pwngridMessenger() {
 
   if (chatFingerprint.length() < 10) {
     drawInfoBox("ERROR!", "Recipient fingerprint", "not found!", true, false);
-    
+    ;
     menuID = 8;
     return;
   }
@@ -1850,7 +1846,7 @@ void pwngridMessenger() {
           drawInfoBox("Info", "Chat deleted.", "", true, false);
           menuID = 8;
           debounceDelay();
-          
+          ;
           return;
         }
         debounceDelay();
@@ -1858,7 +1854,7 @@ void pwngridMessenger() {
 
       if (inputManager::isButtonBLongPressed()) {
         // Exit chat
-        
+        ;
         menuID = 8;
         return;
       }
@@ -1933,7 +1929,7 @@ void pwngridMessenger() {
       if (!typingMessage) {
           if (c == ';') { scroll++; delay(50); lastInboxSync = now; }
           if (c == '.') { scroll--; delay(50); lastInboxSync = now; }
-          if (c == '`') {  menuID = 8; return; }
+          if (c == '`') { ; menuID = 8; return; }
           
           if (c == 'd') {
             if(drawQuestionBox("Delete chat?", "Are you sure?", "")){
@@ -1943,7 +1939,7 @@ void pwngridMessenger() {
               drawInfoBox("Info", "Chat deleted.", "", true, false);
               menuID = 8;
               debounceDelay();
-              
+              ;
               return;
             }
             debounceDelay();
@@ -2249,7 +2245,7 @@ void runApp(uint16_t appID){
           contacts_vector.push_back({name, fingerprint});
       }
       String names[contacts_vector.size()+1];
-      for(size_t i = 0; i<=contacts_vector.size(); i++){
+      for(uint16_t i = 0; i<=contacts_vector.size(); i++){
         names[i] = contacts_vector[i].name;
       }
       int16_t result = drawMultiChoice("Select recepient:", names, contacts_vector.size(), 0, 0);
