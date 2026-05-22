@@ -1,8 +1,8 @@
 ![baner](https://github.com/user-attachments/assets/8daf0ad9-fb8c-4d7c-812c-39e26de5e7f4)
 
-# M5Gothi
+# M5Gotchi 
 
-M5Gothi brings the Pwnagotchi functions and interface to the M5Stack platform, providing both automatic and manual Wi-Fi control through an integrated keyboard or button interface, so you can finally go touch some grass and hack at the same time. Inspied by the original Pwnagotchi project. It doesn't have AI, but at least its working like it should.
+M5Gotchi brings the Pwnagotchi functions and interface to the M5Stack platform, providing both automatic and manual Wi-Fi control through an integrated keyboard or button interface, so you can finally go touch some grass and hack at the same time. Inspied by the original Pwnagotchi project. It doesn't have AI, but at least its working like it should.
 
 ---
 
@@ -112,7 +112,7 @@ You can install PlatformIO using either:
 
    ```bash
    git clone https://github.com/Devsur11/M5Gotchi/
-   cd M5gothi
+   cd M5Gotchi
    ```
 
 2. Build and upload via PlatformIO:
