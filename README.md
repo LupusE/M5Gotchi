@@ -26,24 +26,25 @@ M5Gotchi brings the Pwnagotchi functions and interface to the M5Stack platform, 
 ## Features
 
 - Full Pwnagothi functionality adapted for M5Cardputer
-- Manual Wi-Fi control via integrated keyboard UI making it first fully UI-controlled pwnagotchi
-- Automatic handshake capture using  Auto Mode
+- Manual Wi-Fi control via integrated keyboard making it first fully UI-controlled pwnagotchi
+- Automatic **handshake** capture using 'Auto Mode'
 - **Update firmware directly from GitHub, SD card, or built-in Web UI**
 - Advanced personality, for better control over pwnagotchi functions
-- pwngrid connection for interaction with other pwnagotchis
-- GPS support for wardriving or getting location info from pwned networks
-- integration with wigle for wardriving data upload
-- full file manager with build-in file editor
+- **pwngrid** connection for interaction with other pwnagotchis
+- **GPS support** for wardriving or getting location info from pwned networks
+- Integration with **wigle** for wardriving data upload
+- Full file manager with build-in file editor
 
 ---
 > [!IMPORTANT]
-> An SD card is **required** for the firmware to function properly on Cardputer. M5StickS3 will use build-in littleFs memory.
+> On Cardputer a SD card is **required** for the firmware to function properly.
+> M5StickS3 will use build-in littleFs memory.
 
 ### SD Card File Structure
 
-- Configuration file: m5gotchi.conf will be created at first boot and then used to store informations. **Don't mess with it at your own - use device UI to change these values!
-- personality will be saved in file called personality.conf.
-- Wpa-sec needed files: uploaded.json, cracked.json. Do not edit those files, and if you're running lite mode and need to view them on pc - use text editor of your choice.
+- The configuration file `m5gotchi.conf` will be created at first boot and then used to store informations. **Don't mess with it at your own - use the UI to change values!
+- The personality will be saved in file called `personality.conf`.
+- Wpa-sec needed the files `uploaded.json` and `cracked.json`. Do not edit those files. If you're running lite mode and need to view them on pc - use text editor of your choice.
 - Captured handshakes will be stored inside a folder called:
 
   ```text
@@ -111,7 +112,7 @@ You can install PlatformIO using either:
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/Devsur11/M5Gotchi/
+   git clone https://github.com/Devsur11/M5Gotchi/ --recursive
    cd M5Gotchi
    ```
 
@@ -137,14 +138,14 @@ You can install PlatformIO using either:
 >To use any of the functions, pwnagothi mode must be set to MANU, otherwise nothing will work!
 
 - **UI** is fully controlled via the **built-in keyboard** in cardputer or 2 buttons on M5StickS3
-- Use  `G0` button to turn screen off or change the mode - customize this is settings
+- Use  `GO` button to turn screen off or change the mode - customize this is settings
 - Press `ESC` to open the main menu
 - Use **arrow keys** to navigate
 - Exit apps using `Fn + ESC`
-- On first boot there will be created m5gotchi.conf file
-- Customize name to your likings via settings
-- customize theme to your liking via settings
-- Use ENTER to confirm or `y` or `n` when asked to do so
+- On first boot the file `m5gotchi.conf` will be created
+- Customize the device name to your likings via settings
+- Customize the theme to your liking via settings
+- Use `ENTER` to confirm or `y` or `n` when asked to do so
 - use `c` to clone wifi when in wifi details menu
 - handshakes are stored in `/M5Gotchi/handshake/` folder with filemanes containing SSID and BSSID of network that was pwned
 
